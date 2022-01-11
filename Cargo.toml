@@ -1,15 +1,16 @@
 [package]
-name = "template"
-description = "A Bevy + mdbook enabled template repo to build on."
+name = "bevy_stylized_wireframe"
+description = "Stylized wireframe rendering"
 version = "0.0.0"
-authors = ["Leafwing Studios"]
-homepage = "https://github.com/leafwing-studios/template-repo"
-repository = "https://github.com/leafwing-studios/template-repo"
+authors = ["Aceeri (conmcclusk@gmail.com)"]
+homepage = "https://github.com/aceeri/bevy_stylized_wireframe"
+repository = "https://github.com/aceeri/bevy_stylized_wireframe"
 license = "MIT + APACHE"
 edition = "2021"
 categories = ["games", "game-development"]
 keywords = ["bevy"]
 exclude = ["assets/**/*", "tools/**/*", "github/**/*"]
+resolver = "2"
 
 [profile.dev]
 opt-level = 3
@@ -18,7 +19,7 @@ opt-level = 3
 members = ["./", "tools/ci"]
 
 [dependencies]
-bevy = { version = "0.6", default-features = true, features = ["dynamic"]}
+bevy = { version = "0.6", default-features = false, features = ["render"] }
 
 [patch.crates-io]
 # We can override the bevy version with remote or local versions
@@ -28,16 +29,3 @@ bevy = { version = "0.6", default-features = true, features = ["dynamic"]}
 
 [dev-dependencies]
 criterion = "0.3"
-
-[lib]
-name = "template_lib"
-path = "src/lib.rs"
-
-[[bin]]
-name = "template_bin"
-path = "src/main.rs"
-
-[[bench]]
-name = "entity_spawning"
-path = "benches/entity_spawning.rs"
-harness = false
