@@ -1,12 +1,12 @@
-use crate::MeshPipeline;
-use crate::{DrawMesh, MeshPipelineKey, MeshUniform, SetMeshBindGroup, SetMeshViewBindGroup};
-use bevy_app::Plugin;
-use bevy_asset::{Assets, Handle, HandleUntyped};
-use bevy_core_pipeline::Opaque3d;
-use bevy_ecs::{prelude::*, reflect::ReflectComponent};
-use bevy_reflect::{Reflect, TypeUuid};
-use bevy_render::render_resource::PolygonMode;
-use bevy_render::{
+use bevy::pbr::MeshPipeline;
+use bevy::pbr::{DrawMesh, MeshPipelineKey, MeshUniform, SetMeshBindGroup, SetMeshViewBindGroup};
+use bevy::app::Plugin;
+use bevy::asset::{Assets, Handle, HandleUntyped};
+use bevy::core_pipeline::Opaque3d;
+use bevy::ecs::{prelude::*, reflect::ReflectComponent};
+use bevy::reflect::{Reflect, TypeUuid};
+use bevy::render::render_resource::PolygonMode;
+use bevy::render::{
     mesh::Mesh,
     render_asset::RenderAssets,
     render_phase::{AddRenderCommand, DrawFunctions, RenderPhase, SetItemPipeline},
@@ -22,69 +22,55 @@ pub const STYLIZED_WIREFRAME_SHADER_HANDLE: HandleUntyped =
 pub struct StylizedWireframePlugin;
 
 impl Plugin for StylizedWireframePlugin {
-    fn build(&self, app: &mut bevy_app::App) {
+    fn build(&self, app: &mut bevy::app::App) {
         let mut shaders = app.world.get_resource_mut::<Assets<Shader>>().unwrap();
         shaders.set_untracked(
-            WIREFRAME_SHADER_HANDLE,
-            Shader::from_wgsl(include_str!("render/wireframe.wgsl")),
+            STYLIZED_WIREFRAME_SHADER_HANDLE,
+            Shader::from_wgsl(include_str!("render/stylized_wireframe.wgsl")),
         );
 
-        app.init_resource::<WireframeConfig>();
-
         app.sub_app_mut(RenderApp)
-            .add_render_command::<Opaque3d, DrawWireframes>()
-            .init_resource::<WireframePipeline>()
-            .init_resource::<SpecializedPipelines<WireframePipeline>>()
+            .add_render_command::<Opaque3d, DrawStylizedWireframes>()
+            .init_resource::<StylizedWireframePipeline>()
+            .init_resource::<SpecializedPipelines<StylizedWireframePipeline>>()
             .add_system_to_stage(RenderStage::Extract, extract_wireframes)
-            .add_system_to_stage(RenderStage::Extract, extract_wireframe_config)
+            //.add_system_to_stage(RenderStage::Extract, extract_wireframe_config)
             .add_system_to_stage(RenderStage::Queue, queue_wireframes);
     }
 }
 
-fn extract_wireframe_config(mut commands: Commands, wireframe_config: Res<WireframeConfig>) {
-    if wireframe_config.is_added() || wireframe_config.is_changed() {
-        commands.insert_resource(wireframe_config.into_inner().clone());
-    }
-}
-
-fn extract_wireframes(mut commands: Commands, query: Query<Entity, With<Wireframe>>) {
+fn extract_wireframes(mut commands: Commands, query: Query<Entity, With<StylizedWireframe>>) {
     for entity in query.iter() {
-        commands.get_or_spawn(entity).insert(Wireframe);
+        commands.get_or_spawn(entity).insert(StylizedWireframe);
     }
 }
 
 /// Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
 #[derive(Component, Debug, Clone, Default, Reflect)]
 #[reflect(Component)]
-pub struct Wireframe;
+pub struct StylizedWireframe;
 
-#[derive(Debug, Clone, Default)]
-pub struct WireframeConfig {
-    /// Whether to show wireframes for all meshes. If `false`, only meshes with a [Wireframe] component will be rendered.
-    pub global: bool,
-}
-
-pub struct WireframePipeline {
+pub struct StylizedWireframePipeline {
     mesh_pipeline: MeshPipeline,
     shader: Handle<Shader>,
 }
-impl FromWorld for WireframePipeline {
+impl FromWorld for StylizedWireframePipeline {
     fn from_world(render_world: &mut World) -> Self {
-        WireframePipeline {
+        StylizedWireframePipeline {
             mesh_pipeline: render_world.get_resource::<MeshPipeline>().unwrap().clone(),
-            shader: WIREFRAME_SHADER_HANDLE.typed(),
+            shader: STYLIZED_WIREFRAME_SHADER_HANDLE.typed(),
         }
     }
 }
 
-impl SpecializedPipeline for WireframePipeline {
+impl SpecializedPipeline for StylizedWireframePipeline {
     type Key = MeshPipelineKey;
 
-    fn specialize(&self, key: Self::Key) -> bevy_render::render_resource::RenderPipelineDescriptor {
+    fn specialize(&self, key: Self::Key) -> bevy::render::render_resource::RenderPipelineDescriptor {
         let mut descriptor = self.mesh_pipeline.specialize(key);
         descriptor.vertex.shader = self.shader.clone_weak();
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone_weak();
-        descriptor.primitive.polygon_mode = PolygonMode::Line;
+        descriptor.primitive.polygon_mode = PolygonMode::Fill;
         descriptor.depth_stencil.as_mut().unwrap().bias.slope_scale = 1.0;
         descriptor
     }
@@ -94,20 +80,16 @@ impl SpecializedPipeline for WireframePipeline {
 fn queue_wireframes(
     opaque_3d_draw_functions: Res<DrawFunctions<Opaque3d>>,
     render_meshes: Res<RenderAssets<Mesh>>,
-    wireframe_config: Res<WireframeConfig>,
-    wireframe_pipeline: Res<WireframePipeline>,
+    wireframe_pipeline: Res<StylizedWireframePipeline>,
     mut pipeline_cache: ResMut<RenderPipelineCache>,
-    mut specialized_pipelines: ResMut<SpecializedPipelines<WireframePipeline>>,
+    mut specialized_pipelines: ResMut<SpecializedPipelines<StylizedWireframePipeline>>,
     msaa: Res<Msaa>,
-    mut material_meshes: QuerySet<(
-        QueryState<(Entity, &Handle<Mesh>, &MeshUniform)>,
-        QueryState<(Entity, &Handle<Mesh>, &MeshUniform), With<Wireframe>>,
-    )>,
+    material_meshes: Query<(Entity, &Handle<Mesh>, &MeshUniform), With<StylizedWireframe>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions
         .read()
-        .get_id::<DrawWireframes>()
+        .get_id::<DrawStylizedWireframes>()
         .unwrap();
     let key = MeshPipelineKey::from_msaa_samples(msaa.samples);
     for (view, mut transparent_phase) in views.iter_mut() {
@@ -132,15 +114,11 @@ fn queue_wireframes(
                 }
             };
 
-        if wireframe_config.global {
-            material_meshes.q0().iter().for_each(add_render_phase);
-        } else {
-            material_meshes.q1().iter().for_each(add_render_phase);
-        }
+        material_meshes.iter().for_each(add_render_phase);
     }
 }
 
-type DrawWireframes = (
+type DrawStylizedWireframes = (
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
     SetMeshBindGroup<1>,
