@@ -17,10 +17,10 @@ use bevy::{
         render_resource::{
             RenderPipelineCache, RenderPipelineDescriptor, SpecializedPipeline,
             SpecializedPipelines, TextureFormat, VertexAttribute, VertexBufferLayout, VertexFormat,
-            VertexState, VertexStepMode, PolygonMode,
+            VertexState, VertexStepMode, PolygonMode, WgpuFeatures,
         },
         view::ExtractedView,
-        RenderApp, RenderStage,
+        RenderApp, RenderStage, options::WgpuOptions,
     },
 };
 
@@ -130,6 +130,12 @@ impl Plugin for SimpleWireframePlugin {
             SIMPLE_WIREFRAME_SHADER_HANDLE,
             Shader::from_wgsl(include_str!("shaders/simple_wireframe.wgsl")),
         );
+
+        let mut options = app
+            .world
+            .get_resource_or_insert_with(WgpuOptions::default);
+
+        options.features |= WgpuFeatures::POLYGON_MODE_LINE;
 
         if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
