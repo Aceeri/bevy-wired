@@ -1,3 +1,4 @@
+
 use std::borrow::Cow;
 
 use bevy::{
@@ -16,7 +17,7 @@ use bevy::{
         render_resource::{
             RenderPipelineCache, RenderPipelineDescriptor, SpecializedPipeline,
             SpecializedPipelines, TextureFormat, VertexAttribute, VertexBufferLayout, VertexFormat,
-            VertexState, VertexStepMode,
+            VertexState, VertexStepMode, PolygonMode,
         },
         view::ExtractedView,
         RenderApp, RenderStage,
@@ -24,32 +25,33 @@ use bevy::{
 };
 
 #[derive(Component, Default)]
-pub struct StylizedWireframe;
+pub struct SimpleWireframe;
 
-pub struct StylizedWireframePipeline {
+pub struct SimpleWireframePipeline {
     mesh_pipeline: MeshPipeline,
     shader: Handle<Shader>,
 }
 
-impl FromWorld for StylizedWireframePipeline {
+impl FromWorld for SimpleWireframePipeline {
     fn from_world(render_world: &mut World) -> Self {
         Self {
             mesh_pipeline: render_world.get_resource::<MeshPipeline>().unwrap().clone(),
-            shader: STYLIZED_WIREFRAME_SHADER_HANDLE.typed(),
+            shader: SIMPLE_WIREFRAME_SHADER_HANDLE.typed(),
         }
     }
 }
 
-impl SpecializedPipeline for StylizedWireframePipeline {
+impl SpecializedPipeline for SimpleWireframePipeline {
     type Key = MeshPipelineKey;
 
     fn specialize(&self, key: Self::Key) -> RenderPipelineDescriptor {
         let mut descriptor = self.mesh_pipeline.specialize(key);
-        descriptor.label = Some(Cow::Borrowed("stylized_wireframe_pipeline"));
+        descriptor.label = Some(Cow::Borrowed("simple_wireframe_pipeline"));
         descriptor.vertex.shader = self.shader.clone_weak();
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone_weak();
         descriptor.primitive.cull_mode = None;
-        descriptor.depth_stencil.as_mut().unwrap().bias.slope_scale = 1.0;
+        descriptor.primitive.polygon_mode = PolygonMode::Line;
+        //descriptor.depth_stencil.as_mut().unwrap().bias.slope_scale = 1.0;
 
         // Barycentric_Position Vec3
         // Vertex_Normal Vec3
@@ -103,7 +105,7 @@ impl SpecializedPipeline for StylizedWireframePipeline {
 }
 
 // This specifies how to render a colored 2d mesh
-type DrawStylizedWireframes = (
+type DrawSimpleWireframes = (
     // Set the pipeline
     SetItemPipeline,
     // Set the view uniform as bind group 0
@@ -115,50 +117,50 @@ type DrawStylizedWireframes = (
 );
 
 /// Handle to the custom shader with a unique random ID
-pub const STYLIZED_WIREFRAME_SHADER_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 4260050316210531118);
+pub const SIMPLE_WIREFRAME_SHADER_HANDLE: HandleUntyped =
+    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 6889891804680973376);
 
 #[derive(Debug, Default)]
-pub struct StylizedWireframePlugin;
+pub struct SimpleWireframePlugin;
 
-impl Plugin for StylizedWireframePlugin {
+impl Plugin for SimpleWireframePlugin {
     fn build(&self, app: &mut bevy::app::App) {
         let mut shaders = app.world.get_resource_mut::<Assets<Shader>>().unwrap();
         shaders.set_untracked(
-            STYLIZED_WIREFRAME_SHADER_HANDLE,
-            Shader::from_wgsl(include_str!("shaders/wireframe.wgsl")),
+            SIMPLE_WIREFRAME_SHADER_HANDLE,
+            Shader::from_wgsl(include_str!("shaders/simple_wireframe.wgsl")),
         );
 
         if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
-                .add_render_command::<Transparent3d, DrawStylizedWireframes>()
-                .init_resource::<StylizedWireframePipeline>()
-                .init_resource::<SpecializedPipelines<StylizedWireframePipeline>>()
+                .add_render_command::<Transparent3d, DrawSimpleWireframes>()
+                .init_resource::<SimpleWireframePipeline>()
+                .init_resource::<SpecializedPipelines<SimpleWireframePipeline>>()
                 .add_system_to_stage(RenderStage::Extract, extract_wireframes)
                 .add_system_to_stage(RenderStage::Queue, queue_wireframes);
         }
     }
 }
 
-fn extract_wireframes(mut commands: Commands, query: Query<Entity, With<StylizedWireframe>>) {
+fn extract_wireframes(mut commands: Commands, query: Query<Entity, With<SimpleWireframe>>) {
     for entity in query.iter() {
-        commands.get_or_spawn(entity).insert(StylizedWireframe);
+        commands.get_or_spawn(entity).insert(SimpleWireframe);
     }
 }
 
 fn queue_wireframes(
     opaque_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
     render_meshes: Res<RenderAssets<Mesh>>,
-    wireframe_pipeline: Res<StylizedWireframePipeline>,
+    wireframe_pipeline: Res<SimpleWireframePipeline>,
     mut pipeline_cache: ResMut<RenderPipelineCache>,
-    mut specialized_pipelines: ResMut<SpecializedPipelines<StylizedWireframePipeline>>,
+    mut specialized_pipelines: ResMut<SpecializedPipelines<SimpleWireframePipeline>>,
     msaa: Res<Msaa>,
-    material_meshes: Query<(Entity, &Handle<Mesh>, &MeshUniform), With<StylizedWireframe>>,
+    material_meshes: Query<(Entity, &Handle<Mesh>, &MeshUniform), With<SimpleWireframe>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Transparent3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions
         .read()
-        .get_id::<DrawStylizedWireframes>()
+        .get_id::<DrawSimpleWireframes>()
         .unwrap();
 
     let key = MeshPipelineKey::from_msaa_samples(msaa.samples);

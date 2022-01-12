@@ -7,7 +7,7 @@ use bevy_stylized_wireframe::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(StylizedWireframePlugin)
+        .add_plugin(SimpleWireframePlugin)
         .insert_resource(Msaa { samples: 4 })
         //var mainStroke = mix(fill, stroke, edge);
         //var outColor = vec4<f32>(0.0)
@@ -26,7 +26,7 @@ pub fn cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 
     // We can now spawn the entities for the star and the camera
     commands.spawn_bundle((
-        StylizedWireframe::default(),
+        SimpleWireframe::default(),
         meshes.add(cube),
         Transform::default(),
         GlobalTransform::default(),

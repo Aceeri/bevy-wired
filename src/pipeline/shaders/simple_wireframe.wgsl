@@ -1,3 +1,4 @@
+
 #import bevy_pbr::mesh_view_bind_group
 #import bevy_pbr::mesh_struct
 
@@ -41,39 +42,10 @@ fn fragment(
     [[builtin(front_facing)]] is_front: bool,
     in: VertexOutput
 ) -> [[location(0)]] vec4<f32> {
-    var position_along = max(in.barycentric.x, in.barycentric.y);
-    if (in.barycentric.y < in.barycentric.x && in.barycentric.y < in.barycentric.z) {
-        var position_along = 1.0 - position_along;
-    }
-
-    var dash_repeats = 10.0;
-    var dash_length = 0.5;
-    var offset = 1.0 / dash_repeats * dash_length / 2.0;
-    var offset = offset + (1.0 / dash_repeats / 2.0);
-    var pattern = fract((position_along + offset) * dash_repeats);
-
-    var computed_thickness = 0.01;
-    var squeeze_min = 1.0;
-    var squeeze_max = 1.0;
-    var computed_thickness = computed_thickness * mix(squeeze_min, squeeze_max, (1.0 - sin(position_along * 3.1415926535)));
-    var computed_thickness = computed_thickness * (1.0 - aastep(dash_length, pattern));
-
-    if (computed_thickness < 0.01) {
-        discard;
-    }
-
-    var barycentric_distance = min(min(in.barycentric.x, in.barycentric.y), in.barycentric.z);
-    var edge = 1.0 - aastep(computed_thickness, barycentric_distance);
-
-    if (edge < 0.01) {
-        discard;
-    }
-
-    var stroke = vec3<f32>(0.0, 0.0, 0.0);
-    var out_color = vec4<f32>(stroke, edge);
+    var out_color = vec4<f32>(1.0, 1.0, 1.0, 1.0);
     if (!is_front) {
-        out_color = vec4<f32>(vec3<f32>(0.1, 0.1, 0.1), edge);
-    } 
+        out_color = vec4<f32>(0.3, 0.3, 0.3, 1.0);
+    }
 
     return out_color;
 }
