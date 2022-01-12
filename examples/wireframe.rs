@@ -8,6 +8,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(StylizedWireframePlugin)
+        .insert_resource(ClearColor(Color::rgba_u8(66, 135, 245, 255)))
         .add_startup_system(cube)
         .insert_resource(Accumulate(0.0))
         .add_system(rotate_camera)
@@ -15,7 +16,7 @@ fn main() {
 }
 
 pub fn cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let mut cube = Mesh::from(bevy::render::mesh::shape::Icosphere::default());
+    let mut cube = Mesh::from(bevy::render::mesh::shape::Torus::default());
     cube.compute_barycentric();
 
     // We can now spawn the entities for the star and the camera

@@ -8,10 +8,7 @@ pub trait ComputeBarycentric {
 
 impl ComputeBarycentric for Mesh {
     fn compute_barycentric(&mut self) {
-        /*
-        self.set_indices(None);
         self.duplicate_vertices();
-        */
 
         let position_count = self
             .attribute(Mesh::ATTRIBUTE_POSITION)
