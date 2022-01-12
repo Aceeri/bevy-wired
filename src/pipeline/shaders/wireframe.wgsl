@@ -117,35 +117,34 @@ fn fragment(
         var position_along = 1.0 - position_along;
     }
 
-    var dash_repeats = 8.0;
+    var dash_repeats = 10.0;
     var dash_length = 0.5;
     var offset = 1.0 / dash_repeats * dash_length / 2.0;
     var offset = offset + (1.0 / dash_repeats / 2.0);
     var pattern = fract((position_along + offset) * dash_repeats);
 
-    var computed_thickness = 0.1;
-    var squeeze_min = 0.0;
-    var squeeze_max = 0.7;
+    var computed_thickness = 0.01;
+    var squeeze_min = 1.0;
+    var squeeze_max = 1.0;
     var computed_thickness = computed_thickness * mix(squeeze_min, squeeze_max, (1.0 - sin(position_along * 3.1415926535)));
     var computed_thickness = computed_thickness * (1.0 - aastep(dash_length, pattern));
+
+    if (computed_thickness < 0.01) {
+        discard;
+    }
 
     var barycentric_distance = min(min(in.barycentric.x, in.barycentric.y), in.barycentric.z);
     var edge = 1.0 - aastep(computed_thickness, barycentric_distance);
 
-
-    if (edge <= 0.2) {
+    if (edge < 0.01) {
         discard;
     }
 
-    if (is_front) {
-        var stroke = vec3<f32>(0.0, 0.0, 0.0);
-        return vec4<f32>(stroke, edge);
-    } else {
-        var stroke = vec3<f32>(0.2, 0.2, 0.2);
-        return vec4<f32>(stroke, edge);
-    }
-    //var mainStroke = mix(fill, stroke, edge);
-    //var outColor = vec4<f32>(0.0)
-    //return vec4<f32>(edge, 0.0, 0.0, 1.0);
-    //return vec4<f32>(0.0, 0.0, 0.0, 0.5);
+    var stroke = vec3<f32>(0.0, 0.0, 0.0);
+    var out_color = vec4<f32>(stroke, edge);
+    if (!is_front) {
+        out_color = vec4<f32>(vec3<f32>(0.1, 0.1, 0.1), edge);
+    } 
+
+    return out_color;
 }

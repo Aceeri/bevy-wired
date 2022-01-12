@@ -23,7 +23,6 @@ use bevy::{
     },
 };
 
-/// A marker component for colored 2d meshes
 #[derive(Component, Default)]
 pub struct StylizedWireframe;
 
