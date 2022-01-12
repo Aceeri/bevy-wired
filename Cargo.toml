@@ -19,7 +19,7 @@ opt-level = 3
 members = ["./", "tools/ci"]
 
 [dependencies]
-bevy = { version = "0.6", default-features = false, features = ["render"] }
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-features = true }
 
 [patch.crates-io]
 # We can override the bevy version with remote or local versions
