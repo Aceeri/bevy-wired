@@ -13,7 +13,7 @@ fn main() {
         //var outColor = vec4<f32>(0.0)
         //return vec4<f32>(edge, 0.0, 0.0, 1.0);
         //return vec4<f32>(0.0, 0.0, 0.0, 0.5);
-        .insert_resource(ClearColor(Color::rgba_u8(66, 135, 245, 255)))
+        .insert_resource(ClearColor(Color::rgba_u8(250, 250, 250, 255)))
         .add_startup_system(cube)
         .insert_resource(Accumulate(0.0))
         .add_system(rotate_camera)
@@ -21,18 +21,30 @@ fn main() {
 }
 
 pub fn cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let mut cube = Mesh::from(bevy::render::mesh::shape::Icosphere::default());
-    cube.compute_barycentric();
+    let mut mesh = Mesh::from(bevy::render::mesh::shape::Torus::default());
+    mesh.compute_barycentric();
 
-    // We can now spawn the entities for the star and the camera
     commands.spawn_bundle((
         StylizedWireframe::default(),
-        meshes.add(cube),
+        meshes.add(mesh),
         Transform::default(),
         GlobalTransform::default(),
         Visibility::default(),
         ComputedVisibility::default(),
-        AlphaMode::Blend,
+    ));
+
+    let mut mesh = Mesh::from(bevy::render::mesh::shape::UVSphere {
+        radius: 0.3,
+        ..Default::default()
+    });
+    mesh.compute_barycentric();
+    commands.spawn_bundle((
+        StylizedWireframe::default(),
+        meshes.add(mesh),
+        Transform::default(),
+        GlobalTransform::default(),
+        Visibility::default(),
+        ComputedVisibility::default(),
     ));
 
     commands.spawn_bundle(PerspectiveCameraBundle {
@@ -49,10 +61,10 @@ pub fn rotate_camera(
     mut cameras: Query<(&mut Transform, &Camera)>,
 ) {
     accumulate.0 += time.delta_seconds() / 5.0;
-    let scale = 5.0;
+    let scale = 3.0;
     for (mut transform, cam) in cameras.iter_mut() {
         *transform =
-            Transform::from_xyz(accumulate.0.cos() * scale, 0.5, accumulate.0.sin() * scale)
+            Transform::from_xyz(accumulate.0.cos() * scale, (accumulate.0 / 1.5).cos() * scale, accumulate.0.sin() * scale)
                 .looking_at(Vec3::ZERO, Vec3::Y);
     }
 }

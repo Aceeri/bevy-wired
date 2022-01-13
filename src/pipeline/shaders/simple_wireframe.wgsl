@@ -42,10 +42,13 @@ fn fragment(
     [[builtin(front_facing)]] is_front: bool,
     in: VertexOutput
 ) -> [[location(0)]] vec4<f32> {
-    var out_color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+    var edge = 1.0;
+    var fill = vec3<f32>(0.902, 0.902, 0.902);
+    var stroke = vec3<f32>(0.059, 0.059, 0.059);
+    var out_color = vec4<f32>(stroke, edge);
     if (!is_front) {
-        out_color = vec4<f32>(0.3, 0.3, 0.3, 1.0);
-    }
+        out_color = vec4<f32>(fill, edge);
+    } 
 
     return out_color;
 }

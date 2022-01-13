@@ -15,8 +15,8 @@ impl ComputeBarycentric for Mesh {
             .expect("Need Mesh::ATTRIBUTE_POSITION to compute barycentric")
             .len();
 
-        let barycentrics = [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]];
-        let barycentrics2 = [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]];
+        let barycentrics = [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 1.0]];
+        let barycentrics2 = [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 1.0]];
         let mut barycentric = Vec::new();
         for i in 0..position_count {
             let even = (i / 3) % 2 == 0;
