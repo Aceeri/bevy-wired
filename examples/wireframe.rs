@@ -21,7 +21,7 @@ fn main() {
 }
 
 pub fn cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let mut mesh = Mesh::from(bevy::render::mesh::shape::Torus::default());
+    let mut mesh = Mesh::from(bevy::render::mesh::shape::Capsule::default());
     mesh.compute_barycentric();
 
     commands.spawn_bundle((
