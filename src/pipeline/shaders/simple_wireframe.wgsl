@@ -42,12 +42,24 @@ fn fragment(
     [[builtin(front_facing)]] is_front: bool,
     in: VertexOutput
 ) -> [[location(0)]] vec4<f32> {
-    var edge = 1.0;
+    var position_along = max(in.barycentric.x, in.barycentric.y);
+    if (in.barycentric.y < in.barycentric.x && in.barycentric.y < in.barycentric.z) {
+        position_along = 1.0 - position_along;
+    }
+
+    var dash_repeats = 10.0;
+    var dash_length = 0.1;
+    var offset = 1.0 / dash_repeats * dash_length / 2.0;
+    var offset = offset + (1.0 / dash_repeats / 2.0);
+    var pattern = fract((position_along + offset) * dash_repeats);
+
+    var edge = 1.0 - aastep(dash_length, pattern);
+
     var fill = vec3<f32>(0.902, 0.902, 0.902);
     var stroke = vec3<f32>(0.059, 0.059, 0.059);
     var out_color = vec4<f32>(stroke, edge);
     if (!is_front) {
-        out_color = vec4<f32>(fill, edge);
+        //out_color = vec4<f32>(fill, edge);
     } 
 
     return out_color;

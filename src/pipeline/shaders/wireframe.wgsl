@@ -43,27 +43,24 @@ fn fragment(
 ) -> [[location(0)]] vec4<f32> {
     var position_along = max(in.barycentric.x, in.barycentric.y);
     if (in.barycentric.y < in.barycentric.x && in.barycentric.y < in.barycentric.z) {
-        var position_along = 1.0 - position_along;
+        position_along = 1.0 - position_along;
     }
 
     var dash_repeats = 10.0;
-    var dash_length = 0.5;
+    var dash_length = 0.1;
     var offset = 1.0 / dash_repeats * dash_length / 2.0;
     var offset = offset + (1.0 / dash_repeats / 2.0);
     var pattern = fract((position_along + offset) * dash_repeats);
 
-    var computed_thickness = 0.18;
-    var squeeze_min = 0.01;
+    var computed_thickness = 0.1;
+    var squeeze_min = 1.0;
     var squeeze_max = 1.0;
-    var computed_thickness = computed_thickness * mix(squeeze_min, squeeze_max, (1.0 - sin(position_along * 3.1415926535)));
-    //var computed_thickness = computed_thickness * (1.0 - aastep(dash_length, pattern));
+    var computed_thickness = computed_thickness * mix(squeeze_min, squeeze_max, (1.0 - sin(position_along * 6.283)));
+    var computed_thickness = computed_thickness * (1.0 - aastep(dash_length, pattern));
+    var computed_thickness = 1.0 - aastep(dash_length, pattern);
 
     var barycentric_distance = min(min(in.barycentric.x, in.barycentric.y), in.barycentric.z);
     var edge = 1.0 - aastep(computed_thickness, barycentric_distance);
-
-    if (edge < 0.01) {
-        discard;
-    }
 
     var stroke = vec3<f32>(0.059, 0.059, 0.059);
     var out_color = vec4<f32>(stroke, edge);

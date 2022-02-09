@@ -15,8 +15,8 @@ impl ComputeBarycentric for Mesh {
             .expect("Need Mesh::ATTRIBUTE_POSITION to compute barycentric")
             .len();
 
-        let barycentrics = [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 1.0]];
-        let barycentrics2 = [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 1.0]];
+        let barycentrics = [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]];
+        let barycentrics2 = [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]];
         let mut barycentric = Vec::new();
         for i in 0..position_count {
             let even = (i / 3) % 2 == 0;
@@ -30,29 +30,3 @@ impl ComputeBarycentric for Mesh {
         self.set_attribute(ATTRIBUTE_BARYCENTRIC, barycentric);
     }
 }
-
-/*
-module.exports.addBarycentricCoordinates = function addBarycentricCoordinates (bufferGeometry, removeEdge = false) {
-  const attrib = bufferGeometry.getIndex() || bufferGeometry.getAttribute('position');
-  const count = attrib.count / 3;
-  const barycentric = [];
-
-  // for each triangle in the geometry, add the barycentric coordinates
-  for (let i = 0; i < count; i++) {
-    const even = i % 2 === 0;
-    const Q = removeEdge ? 1 : 0;
-    if (even) {
-      barycentric.push(
-        0, 0, 1,
-        0, 1, 0,
-        1, 0, Q
-      );
-    } else {
-      barycentric.push(
-        0, 1, 0,
-        0, 0, 1,
-        1, 0, Q
-      );
-    }
-  }
- */

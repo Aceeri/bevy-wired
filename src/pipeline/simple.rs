@@ -51,6 +51,7 @@ impl SpecializedPipeline for SimpleWireframePipeline {
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone_weak();
         descriptor.primitive.cull_mode = None;
         descriptor.primitive.polygon_mode = PolygonMode::Line;
+        dbg!(&descriptor);
         //descriptor.depth_stencil.as_mut().unwrap().bias.slope_scale = 1.0;
 
         // Barycentric_Position Vec3
@@ -169,7 +170,7 @@ fn queue_wireframes(
         .get_id::<DrawSimpleWireframes>()
         .unwrap();
 
-    let key = MeshPipelineKey::from_msaa_samples(msaa.samples);
+    let key = MeshPipelineKey::from_msaa_samples(msaa.samples) | MeshPipelineKey::TRANSPARENT_MAIN_PASS;
     for (view, mut transparent_phase) in views.iter_mut() {
         let view_matrix = view.transform.compute_matrix();
         let view_row_2 = view_matrix.row(2);

@@ -50,6 +50,8 @@ impl SpecializedPipeline for StylizedWireframePipeline {
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone_weak();
         descriptor.primitive.cull_mode = None;
         descriptor.depth_stencil.as_mut().unwrap().bias.slope_scale = 1.0;
+        dbg!(&key);
+        dbg!(&descriptor);
 
         // Barycentric_Position Vec3
         // Vertex_Normal Vec3
@@ -147,7 +149,7 @@ fn extract_wireframes(mut commands: Commands, query: Query<Entity, With<Stylized
 }
 
 fn queue_wireframes(
-    opaque_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
+    transparent_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
     render_meshes: Res<RenderAssets<Mesh>>,
     wireframe_pipeline: Res<StylizedWireframePipeline>,
     mut pipeline_cache: ResMut<RenderPipelineCache>,
@@ -156,12 +158,12 @@ fn queue_wireframes(
     material_meshes: Query<(Entity, &Handle<Mesh>, &MeshUniform), With<StylizedWireframe>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Transparent3d>)>,
 ) {
-    let draw_custom = opaque_3d_draw_functions
+    let draw_custom = transparent_3d_draw_functions
         .read()
         .get_id::<DrawStylizedWireframes>()
         .unwrap();
 
-    let key = MeshPipelineKey::from_msaa_samples(msaa.samples);
+    let key = MeshPipelineKey::from_msaa_samples(msaa.samples) | MeshPipelineKey::TRANSPARENT_MAIN_PASS;
     for (view, mut transparent_phase) in views.iter_mut() {
         let view_matrix = view.transform.compute_matrix();
         let view_row_2 = view_matrix.row(2);
