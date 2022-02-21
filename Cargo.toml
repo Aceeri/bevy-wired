@@ -1,11 +1,11 @@
 [package]
-name = "bevy_stylized_wireframe"
+name = "bevy_wired"
 description = "Stylized wireframe rendering"
 version = "0.1.0"
 authors = ["Aceeri (conmcclusk@gmail.com)"]
 homepage = "https://github.com/aceeri/bevy_stylized_wireframe"
 repository = "https://github.com/aceeri/bevy_stylized_wireframe"
-license = "MIT + APACHE"
+license = "MIT"
 edition = "2021"
 categories = ["games", "game-development"]
 keywords = ["bevy"]
@@ -14,9 +14,6 @@ resolver = "2"
 
 [profile.dev]
 opt-level = 3
-
-[workspace]
-members = ["./", "tools/ci"]
 
 [dependencies]
 bevy = { version = "0.6.1", default-features = true }
